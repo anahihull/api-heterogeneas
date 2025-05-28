@@ -1,6 +1,9 @@
 const db = require("../db/connection");
 
 exports.crearSolicitud = async (req, res) => {
+  if (!req.body || !req.body.nombre || !req.body.correo || !req.body.password || !req.body.motivo) {
+    return res.status(400).json({ error: "Missing required fields" });
+  }
   const { nombre, correo, password, motivo } = req.body;
   try {
     await db.execute(
@@ -26,10 +29,14 @@ exports.obtenerPendientes = async (req, res) => {
 };
 
 exports.aprobarSolicitud = async (req, res) => {
+  const { id } = req.params; // Changed from req.query to req.params to get the id from the URL parameter
+  if (!id) {
+    return res.status(400).json({ error: "ID is required" });
+  }
   try {
     await db.execute(
       `UPDATE SolicitudUsuario SET status_id = (SELECT id FROM Status WHERE nombre = 'aprobado') WHERE id = ?`,
-      [req.params.id]
+      [id]
     );
     res.json({ message: "Solicitud aprobada" });
   } catch (err) {

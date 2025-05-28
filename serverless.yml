@@ -1,5 +1,5 @@
 # "org" ensures this Service is used with the correct Serverless Framework Access Key.
-org: anahihull
+org: null
 # "app" enables Serverless Framework Dashboard features and sharing them with other Services.
 app: backend-heterogeneas
 # "service" is the name of this project. This will also be added to your AWS resource names.
@@ -8,17 +8,62 @@ service: api-heterogeneas
 provider:
   name: aws
   runtime: nodejs20.x
-  region: us-east-1
+  region: ${env:AWS_REGION}
   environment:
     DB_HOST: ${env:DB_HOST}
     DB_PORT: ${env:DB_PORT}
     DB_USER: ${env:DB_USER}
     DB_PASSWORD: ${env:DB_PASSWORD}
     DB_NAME: ${env:DB_NAME}
-  
+    BUCKET_NAME: !Ref S3Bucket
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - s3:PutObject       # allow uploads
+            - s3:GetObject       # allow downloads
+            - s3:ListBucket      # allow listing files
+            - s3:DeleteObject
+          Resource:
+            - !GetAtt S3Bucket.Arn        # the bucket itself
+            - !Sub '${S3Bucket.Arn}/*'    # all objects in that bucket
+
+plugins:
+  - serverless-offline
 
 functions:
   api:
-    handler: handler.handler
+    handler: src/handler.handler
     events:
       - httpApi: "*"
+
+resources:
+  Resources:
+    # CloudFormation resource for our S3 bucket
+    S3Bucket:
+      Type: AWS::S3::Bucket
+      Properties: 
+        PublicAccessBlockConfiguration:
+          BlockPublicAcls:    false
+          IgnorePublicAcls:   false
+          BlockPublicPolicy:  false
+          RestrictPublicBuckets: false
+
+    BucketPolicy:
+      Type: AWS::S3::BucketPolicy
+      Properties:
+        Bucket: !Ref S3Bucket
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+            - Sid: PublicReadGetObject
+              Effect: Allow
+              Principal: '*'
+              Action: ['s3:GetObject']
+              Resource: !Sub '${S3Bucket.Arn}/*'
+
+  Outputs:
+    BucketName:
+      Description: auto‐generated S3 bucket name
+      Value: !Ref S3Bucket

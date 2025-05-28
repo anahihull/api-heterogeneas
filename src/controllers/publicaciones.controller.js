@@ -3,8 +3,12 @@ const { subirBase64AS3 } = require("../utils/s3Uploader");
 
 exports.crearPublicacion = async (req, res) => {
   const { UserId, Title, Content, image_base64, categoria_id } = req.body;
+  if (!UserId || !Title || !Content || !image_base64 || !categoria_id) {
+    return res.status(400).json({ error: "Missing required fields" });
+  }
   try {
     const image_url = await subirBase64AS3(image_base64, "publicaciones");
+    console.log(image_url)
     await db.execute(
       `INSERT INTO Publicacion (UserId, Title, Content, image_url, status_id, categoria_id)
        VALUES (?, ?, ?, ?, (SELECT id FROM Status WHERE nombre = 'pendiente'), ?)`,
@@ -52,6 +56,9 @@ exports.publicacionesAprobadasPorCategoria = async (req, res) => {
 };
 
 exports.publicacionesPorUsuarioYStatus = async (req, res) => {
+  if (!req.params.userId || !req.query.status) {
+    return res.status(400).json({ error: "Missing required parameters" });
+  }
   const { userId } = req.params;
   const { status } = req.query;
   try {

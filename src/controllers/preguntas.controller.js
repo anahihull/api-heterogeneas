@@ -1,6 +1,9 @@
 const db = require("../db/connection");
 
 exports.crearPregunta = async (req, res) => {
+  if (!req.body.fecha || !req.body.content) {
+    return res.status(400).json({ error: "Missing required fields" });
+  }
   const { fecha, content } = req.body;
   try {
     await db.execute(`INSERT INTO Preguntas (fecha, content) VALUES (?, ?)`, [fecha, content]);
@@ -20,6 +23,9 @@ exports.obtenerPreguntas = async (req, res) => {
 };
 
 exports.preguntasPorUsuarioYStatus = async (req, res) => {
+  if (!req.query.userId || !req.query.status) {
+    return res.status(400).json({ error: "Missing required parameters" });
+  }
   const { userId, status } = req.query;
   try {
     const [rows] = await db.execute(

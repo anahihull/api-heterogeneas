@@ -2,6 +2,9 @@ const db = require("../db/connection");
 const { subirBase64AS3 } = require("../utils/s3Uploader");
 
 exports.crearRecurso = async (req, res) => {
+  if (!req.body.titulo || !req.body.descripcion || !req.body.materia_id || !req.body.recurso_base64) {
+    return res.status(400).json({ error: "Missing required fields" });
+  }
   const { titulo, descripcion, materia_id, recurso_base64 } = req.body;
   try {
     const recurso_url = await subirBase64AS3(recurso_base64, "recursos");
