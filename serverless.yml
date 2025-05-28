@@ -1,0 +1,24 @@
+# "org" ensures this Service is used with the correct Serverless Framework Access Key.
+org: anahihull
+# "app" enables Serverless Framework Dashboard features and sharing them with other Services.
+app: backend-heterogeneas
+# "service" is the name of this project. This will also be added to your AWS resource names.
+service: api-heterogeneas
+
+provider:
+  name: aws
+  runtime: nodejs20.x
+  region: us-east-1
+  environment:
+    DB_HOST: ${env:DB_HOST}
+    DB_PORT: ${env:DB_PORT}
+    DB_USER: ${env:DB_USER}
+    DB_PASSWORD: ${env:DB_PASSWORD}
+    DB_NAME: ${env:DB_NAME}
+  
+
+functions:
+  api:
+    handler: handler.handler
+    events:
+      - httpApi: "*"
