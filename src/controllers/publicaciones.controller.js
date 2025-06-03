@@ -71,3 +71,15 @@ exports.publicacionesPorUsuarioYStatus = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+
+
+exports.publicacionesPendientes = async (req, res) => {
+  try {
+    const [rows] = await db.execute(
+      `SELECT * FROM Publicacion WHERE status_id = (SELECT id FROM Status WHERE nombre = 'pendiente')`
+    );
+    res.json(rows);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};

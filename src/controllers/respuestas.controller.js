@@ -37,3 +37,14 @@ exports.respuestasAprobadasPorPregunta = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+
+exports.respuestasPendientes = async (req, res) => {
+  try {
+    const [rows] = await db.execute(
+      `SELECT * FROM Respuestas WHERE status_id = (SELECT id FROM Status WHERE nombre = 'pendiente') ORDER BY id DESC`
+    );
+    res.json(rows);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};

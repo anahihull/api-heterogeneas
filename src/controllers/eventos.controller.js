@@ -2,19 +2,19 @@ const db = require("../db/connection");
 const { subirBase64AS3 } = require("../utils/s3Uploader");
 
 exports.crearEvento = async (req, res) => {
-  const { fecha, titulo, descripcion, costo, evento_base64 } = req.body;
+  const { fecha, titulo, descripcion, costo, evento_url } = req.body;
   try {
-    const evento_url = await subirBase64AS3(evento_base64, "eventos");
     await db.execute(
       `INSERT INTO Evento (fecha, titulo, descripcion, costo, evento_url, status_id)
        VALUES (?, ?, ?, ?, ?, (SELECT id FROM Status WHERE nombre = 'pendiente'))`,
-      [fecha, titulo, descripcion, costo, evento_url]
+      [fecha, titulo, descripcion, costo || null, evento_url]
     );
     res.status(201).json({ message: "Evento creado" });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
+
 
 exports.aprobarEvento = async (req, res) => {
   try {
